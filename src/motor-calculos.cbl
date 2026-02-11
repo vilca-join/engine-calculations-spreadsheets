@@ -57,13 +57,28 @@
              "**CORRECTAMENTE GENERADO**".
 
 
-       01 WS-EMPLEADO-ID-CONTADOR       PIC 9(4)    VALUE 0. 
+       01 WS-EMPLEADO-ID-CONTADOR       PIC 9(4)    VALUE 0.        
+       01 WS-FORMATO-ID-EMPLEADO.
+           05 WS-ID             PIC 9(4).  
+           05 WS-FILLER                  PIC X(2)    VALUE "PL".
        
-       01 WS-FORMATO-ID-EMPLEADO        . 
-       *> FORMATO PARA ID DE EMPLEADOS
-          05 WS-EMPLEADO-ID             PIC 9(4).  
-          *> FORMATO 0001PL
-          05 WS-FILLER                  PIC X(2)    VALUE "PL".
+       01  WS-EMPLEADOS-REG.
+           05  WS-EMPLEADO-ID  PIC X(6).    
+           05  WS-NOMBRE-EMPLEADO           PIC X(20).
+           05  WS-EMPLEADO-NOMBRE         PIC X(20).
+           05  WS-EMPLEADO-FECHA-INGRESO  PIC X(20).
+           05  WS-EMPLEADO-SUELDO-BASE    PIC 9(7)V99.   
+           05  WS-EMPLEADO-ASIG-FAMILIAR  PIC 9(1).
+               88 WS-EMPLEADO-CON-ASIG-FAMILIAR       VALUE 1.
+               88 WS-EMPLEADO-SIN-ASIG-FAMILIAR       VALUE 0. 
+           05  WS-EMPLEADO-REG-PENSION    PIC 9(2).               
+           05  WS-EMPLEADO-COMISION-AFP   PIC X(3).
+               88 WS-EMPLEADO-COMISION-AFP-FLUJO      VALUE "F".
+               88 WS-EMPLEADO-COMISION-AFP-MIXTO      VALUE "M".
+           05  WS-EMPLEADO-CUSPP          PIC X(15).
+    
+
+
        01 WS-FLAG.
           05 WS-FIN-ARCHIVO             PIC X(1)    VALUE "N".  
              88 FLAG-LEIDO                          VALUE "S".
@@ -72,6 +87,10 @@
        01 WS-PROCESO-INGRESAR-DATOS     PIC X(1)    VALUE "S".
           88 WS-INICIAR-PROCESO                     VALUE "S" "s". 
           88 WS-TERMINAR-PROCESO                    VALUE "N" "n". 
+
+       01  WS-VALIDAR-NOMBRE                     PIC X(1) VALUE "N".
+           88 WS-NOMBRE-VALIDO                     VALUE "S".
+           88 WS-NOMBRE-INVALIDO                  VALUE "N".
        PROCEDURE DIVISION.
        
        000-INICIO.
@@ -85,30 +104,60 @@
            DISPLAY "GEMERANDO ID DE EMPLEADO...".   
            ADD 1 TO WS-EMPLEADO-ID-CONTADOR.
 
-           MOVE WS-EMPLEADO-ID-CONTADOR TO WS-EMPLEADO-ID.
-           MOVE WS-FORMATO-ID-EMPLEADO TO FD-EMPLEADO-ID.
+           MOVE WS-EMPLEADO-ID-CONTADOR TO WS-ID.
+           MOVE WS-FORMATO-ID-EMPLEADO TO FW-EMPLEADO-ID.
            DISPLAY WS-DISPLAY-MENSAJE-EXITO.
 
            DISPLAY WS-DISPLAY-INPUT-NOMBRE.
-           ACCEPT FD-EMPLEADO-NOMBRE. 
+           ACCEPT WS-EMPLEADO-NOMBRE. 
            DISPLAY WS-DISPLAY-INPUT-FECHA-INGRESO.
-           ACCEPT FD-EMPLEADO-FECHA-INGRESO.
+           ACCEPT WS-EMPLEADO-FECHA-INGRESO.
            DISPLAY WS-DISPLAY-INPUT-SUELDO-BASE.
-           ACCEPT FD-EMPLEADO-SUELDO-BASE. 
+           ACCEPT WS-EMPLEADO-SUELDO-BASE. 
            DISPLAY WS-DISPLAY-INPUT-ASIG-FAMILIAR.
-           ACCEPT FD-EMPLEADO-ASIG-FAMILIAR.
+           ACCEPT WS-EMPLEADO-ASIG-FAMILIAR.
            DISPLAY WS-DISPLAY-INPUT-REG-PENSION.
-           ACCEPT FD-EMPLEADO-REG-PENSION.
+           ACCEPT WS-EMPLEADO-REG-PENSION.
 
-           IF FD-EMPLEADO-REG-PENSION = 2
+           IF WS-EMPLEADO-REG-PENSION = 2
               DISPLAY WS-DISPLAY-INPUT-COMISION-AFP
-              ACCEPT FD-EMPLEADO-COMISION-AFP
+              ACCEPT WS-EMPLEADO-COMISION-AFP
               DISPLAY WS-DISPLAY-INPUT-CUSPP
-              ACCEPT FD-EMPLEADO-CUSPP          
+              ACCEPT WS-EMPLEADO-CUSPP          
            ELSE 
-              MOVE SPACE TO FD-EMPLEADO-COMISION-AFP
-              MOVE SPACE TO FD-EMPLEADO-CUSPP
+              MOVE SPACE TO WS-EMPLEADO-COMISION-AFP
+              MOVE SPACE TO WS-EMPLEADO-CUSPP
            END-IF.
+
+           IF 
            WRITE FD-EMPLEADO-REG.
            DISPLAY "¿Desea ingresar otro empleado? (S/N): "
-           ACCEPT WS-PROCESO-INGRESAR-DATOS.           
+           ACCEPT WS-PROCESO-INGRESAR-DATOS.
+
+       501-VALIDAR-DATOS.
+
+           SET WS-NOMBRE-VALIDO TO TRUE.
+           SET WS-FECHA-INGRESO-VALIDO TO TRUE.
+           SET WS-SUELDO-BASE-VALIDO TO TRUE.
+           SET WS-ASIG-FAMILIAR-VALIDO TO TRUE.
+           SET WS-REG-PENSION-VALIDO TO TRUE.
+
+           SET WS-COMISION-AFP-VALIDO TO TRUE.
+           
+           SET WS-CUSPP-VALIDO TO TRUE.
+           
+           IF WS-NOMBRE-EMPLEADO = SPACE OR 
+           WS-NOMBRE-EMPLEADO IS NUMERIC
+               SET WS-NOMBRE-INVALIDO TO TRUE
+           END-IF.
+           IF WS-EMPLEADO-FECHA-INGRESO IS NOT NUMERIC OR 
+              WS-EMPLEADO-FECHA-INGRESO = SPACE
+                SET WS-FECHA-INGRESO-INVALIDO TO TRUE
+           END-IF.
+           IF WS-EMPLEADO-SUELDO-BASE IS NOT NUMERIC OR  
+           WS-EMPLEADO-SUELDO-BASE = SPACE OR 
+           WS-EMPLEADO-SUELDO-BASE <=0
+                SET WS-SUELDO-BASE-INVALIDO TO TRUE
+           END-IF.
+          
+
