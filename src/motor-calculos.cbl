@@ -73,26 +73,24 @@
           05 WS-EMPLEADO-NOMBRE         PIC X(20).
 
           05 WS-EMPLEADO-FECHA-INGRESO.
-             10 WS-EMPLEADO-INGRESO-DIA  PIC 9(2).
-                88 WS-DIA-VALIDO                   VALUE 1 THRU 31.
-             10 WS-EMPLEADO-INGRESO-MES  PIC 9(2).
-                88 WS-MES-VALIDO                   VALUE 1 THRU 12.
-             10 WS-EMPLEADO-INGRESO-ANIO PIC 9(4). 
-                88 WS-ANIO-VALIDO                  VALUE 1900 THRU 2024.
+             10 WS-EMPLEADO-INGRESO-DIA PIC 9(2).
+                88 WS-DIA-VALIDO                    VALUE 1 THRU 31.
+             10 WS-EMPLEADO-INGRESO-MES PIC 9(2).
+                88 WS-MES-VALIDO                    VALUE 1 THRU 12.
+             10 WS-EMPLEADO-INGRESO-ANIO
+                                        PIC 9(4). 
+                88 WS-ANIO-VALIDO                   VALUE 1900 THRU 2024
+                                                                      .
 
           05 WS-EMPLEADO-SUELDO-BASE    PIC 9(7)V99.   
-          05 WS-EMPLEADO-ASIG-FAMILIAR  PIC 9(1).
-             88 WS-EMPLEADO-CON-ASIG-FAMILIAR       VALUE 1.
-             88 WS-EMPLEADO-SIN-ASIG-FAMILIAR       VALUE 0. 
+          05 WS-EMPLEADO-ASIG-FAMILIAR  PIC X(1).
+             88 WS-EMPLEADO-CON-ASIG-FAMILIAR       VALUE "S""s".
+             88 WS-EMPLEADO-SIN-ASIG-FAMILIAR       VALUE "N""n". 
           05 WS-EMPLEADO-REG-PENSION    PIC 9(2).               
           05 WS-EMPLEADO-COMISION-AFP   PIC X(3).
              88 WS-EMPLEADO-COMISION-AFP-FLUJO      VALUE "F".
              88 WS-EMPLEADO-COMISION-AFP-MIXTO      VALUE "M".
-          05 WS-EMPLEADO-CUSPP          PIC X(15).
-       01 WS-FECHA-RANGOS.
-          05 WS-FECHA-INGRESO-ANIO      PIC 9(4).
-          05 WS-FECHA-INGRESO-MES       PIC 9(2).
-          05 WS-FECHA-INGRESO-DIA       PIC 9(2).
+          05 WS-EMPLEADO-CUSPP          PIC X(15).       
 
 
        01 WS-FLAG.
@@ -190,57 +188,57 @@
            PERFORM UNTIL WS-FECHA-INGRESO-VALIDO
                    DISPLAY WS-DISPLAY-INPUT-FECHA-INGRESO
                    DISPLAY "INGRESE DIA (DD):"
-                   ACCEPT WS-FECHA-INGRESO-DIA
+                   ACCEPT WS-EMPLEADO-INGRESO-DIA
                    DISPLAY "INGRESE MES (MM):"
-                   ACCEPT WS-FECHA-INGRESO-MES
+                   ACCEPT WS-EMPLEADO-INGRESO-MES
                    DISPLAY "INGRESE ANIO (AAAA):"
-                   ACCEPT WS-FECHA-INGRESO-ANIO
-               
-                   PERFORM 503-VALIDAR-FECHA-INGRESO
+                   ACCEPT WS-EMPLEADO-INGRESO-ANIO
+
+                  INSPECT WS-EMPLEADO-INGRESO-DIA 
+                  REPLACING LEADING SPACES BY "0"
+                  INSPECT WS-EMPLEADO-INGRESO-MES 
+                  REPLACING LEADING SPACES BY "0"               
+                  PERFORM 503-VALIDAR-FECHA-INGRESO
            END-PERFORM.
        503-VALIDAR-FECHA-INGRESO.
            
            SET WS-FECHA-INGRESO-VALIDO TO TRUE.
            *> VALIDAR FECHA DE INGRESO
-           IF NOT (WS-DIA-VALIDO AND WS-MES-VALIDO AND WS-ANIO-VALIDO) 
-               DISPLAY WS-DISPLAY-ERROR
+           IF NOT (WS-DIA-VALIDO AND WS-MES-VALIDO AND WS-ANIO-VALIDO)              
               SET WS-FECHA-INGRESO-INVALIDO TO TRUE
            END-IF.
 
-           IF WS-FECHA-INGRESO-DIA = ZERO OR
-              WS-FECHA-INGRESO-MES = ZERO OR
-              WS-FECHA-INGRESO-ANIO = ZERO
-              DISPLAY WS-DISPLAY-ERROR
+           IF WS-EMPLEADO-INGRESO-DIA IS NOT NUMERIC OR
+              WS-EMPLEADO-INGRESO-MES IS NOT NUMERIC OR
+              WS-EMPLEADO-INGRESO-ANIO IS NOT NUMERIC OR
+              WS-EMPLEADO-INGRESO-DIA = ZERO OR
+              WS-EMPLEADO-INGRESO-MES = ZERO OR
+              WS-EMPLEADO-INGRESO-ANIO = ZERO
               SET WS-FECHA-INGRESO-INVALIDO TO TRUE
            END-IF.
 
-           IF (WS-FECHA-INGRESO-MES = 04 OR
-              WS-FECHA-INGRESO-MES = 06 OR 
-              WS-FECHA-INGRESO-MES = 09 OR 
-              WS-FECHA-INGRESO-MES = 11) AND WS-FECHA-INGRESO-DIA > 30
-              DISPLAY WS-DISPLAY-ERROR
+           IF (WS-EMPLEADO-INGRESO-MES = 04 OR
+              WS-EMPLEADO-INGRESO-MES = 06 OR
+              WS-EMPLEADO-INGRESO-MES = 09 OR
+              WS-EMPLEADO-INGRESO-MES = 11) AND WS-EMPLEADO-INGRESO-DIA > 30
               SET WS-FECHA-INGRESO-INVALIDO TO TRUE
            END-IF.
 
-           IF WS-FECHA-INGRESO-MES = 02
-              IF FUNCTION MOD(WS-FECHA-INGRESO-ANIO , 4) = 0
-                 IF WS-FECHA-INGRESO-DIA > 29
-                    DISPLAY WS-DISPLAY-ERROR
+           IF WS-EMPLEADO-INGRESO-MES = 02
+              IF FUNCTION MOD(WS-EMPLEADO-INGRESO-ANIO, 4) = 0
+                 IF WS-EMPLEADO-INGRESO-DIA > 29
                     SET WS-FECHA-INGRESO-INVALIDO TO TRUE
                  END-IF
               ELSE
-                 IF WS-FECHA-INGRESO-DIA > 28
-                    DISPLAY WS-DISPLAY-ERROR
+                 IF WS-EMPLEADO-INGRESO-DIA > 28
                     SET WS-FECHA-INGRESO-INVALIDO TO TRUE
                  END-IF
               END-IF
            END-IF. 
 
-           IF WS-EMPLEADO-FECHA-INGRESO IS NOT NUMERIC OR
-              WS-EMPLEADO-FECHA-INGRESO = SPACE
+           IF WS-FECHA-INGRESO-INVALIDO
               DISPLAY WS-DISPLAY-ERROR
-              SET WS-FECHA-INGRESO-INVALIDO TO TRUE
-           END-IF.       
+           END-IF.               
        
        104-PROCESAR-SUELDO-BASE.
            SET WS-SUELDO-BASE-INVALIDO TO TRUE.
@@ -274,8 +272,10 @@
 
            SET WS-ASIG-FAMILIAR-VALIDO TO TRUE.
            *> VALIDAR ASIGNACION FAMILIAR
-           IF WS-EMPLEADO-ASIG-FAMILIAR IS NOT = 1 AND
-              WS-EMPLEADO-ASIG-FAMILIAR IS NOT = 0 AND
+           IF WS-EMPLEADO-ASIG-FAMILIAR IS NOT = "S" AND
+              WS-EMPLEADO-ASIG-FAMILIAR IS NOT = "s" AND
+              WS-EMPLEADO-ASIG-FAMILIAR IS NOT = "N" AND
+              WS-EMPLEADO-ASIG-FAMILIAR IS NOT = "n" AND
               WS-EMPLEADO-ASIG-FAMILIAR IS NOT = SPACE
               DISPLAY WS-DISPLAY-ERROR
               SET WS-ASIG-FAMILIAR-INVALIDO TO TRUE
@@ -314,7 +314,9 @@
            SET WS-COMISION-AFP-VALIDO TO TRUE.
            *> VALIDAR COMISION AFP
            IF WS-EMPLEADO-COMISION-AFP IS NOT = "F" AND
+              WS-EMPLEADO-COMISION-AFP IS NOT = "f" AND
               WS-EMPLEADO-COMISION-AFP IS NOT = "M" AND
+              WS-EMPLEADO-COMISION-AFP IS NOT = "m" AND
               WS-EMPLEADO-COMISION-AFP IS NOT = SPACE
               DISPLAY WS-DISPLAY-ERROR
               SET WS-COMISION-AFP-INVALIDO TO TRUE
